@@ -15,6 +15,7 @@ import (
 func main() {
 	username := os.Args[1]
 	password := os.Args[2]
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
