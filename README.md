@@ -38,3 +38,9 @@ go build
 
 やはりバイナリのサイズがデカいので、複数機能をまとめるべき。
 とりあえず  `go build -trimpath -ldflags="-w -s"` して upxするなど。
+
+
+## 参考
+
+- [sdk package - github.com/aws/aws-sdk-go - Go Packages](https://pkg.go.dev/github.com/aws/aws-sdk-go)
+- [sdk package - github.com/aws/aws-sdk-go-v2 - Go Packages](https://pkg.go.dev/github.com/aws/aws-sdk-go-v2)
