@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"os"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
+	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider/types"
 
 	"github.com/joho/godotenv"
 )
@@ -21,20 +22,23 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(os.Getenv("REGION")),
-	})
+	// AWS SDK for Go v2の設定
+	cfg, err := config.LoadDefaultConfig(
+		context.TODO(),
+		config.WithRegion(os.Getenv("REGION")),
+	)
 	if err != nil {
-		fmt.Println("Error creating session:", err)
-		os.Exit(1)
+		log.Fatalf("unable to load SDK config, %v", err)
 	}
 
-	cognitoIdp := cognitoidentityprovider.New(sess)
+	// cognitoIdp Clientの作成
+	cognitoIdp := cognitoidentityprovider.NewFromConfig(cfg)
 
-	signupInput := &cognitoidentityprovider.SignUpInput{
+	// SignUp 操作を実行する
+	signUpInput := &cognitoidentityprovider.SignUpInput{
 		ClientId: aws.String(os.Getenv("CLIENT_ID")),
 		Password: aws.String(password),
-		UserAttributes: []*cognitoidentityprovider.AttributeType{
+		UserAttributes: []types.AttributeType{
 			{
 				Name:  aws.String("email"),
 				Value: aws.String(username),
@@ -51,14 +55,15 @@ func main() {
 		Username: aws.String(username),
 	}
 
-	signupOutput, err := cognitoIdp.SignUp(signupInput)
+	_, err = cognitoIdp.SignUp(context.TODO(), signUpInput)
 	if err != nil {
-		fmt.Println("Error signing up:", err)
-		os.Exit(1)
+		log.Fatal(err)
+		return
 	}
 
-	updateInput := &cognitoidentityprovider.AdminUpdateUserAttributesInput{
-		UserAttributes: []*cognitoidentityprovider.AttributeType{
+	// UpdateUserAttributes 操作を実行する
+	updateAttrInput := &cognitoidentityprovider.AdminUpdateUserAttributesInput{
+		UserAttributes: []types.AttributeType{
 			{
 				Name:  aws.String("email_verified"),
 				Value: aws.String("true"),
@@ -67,13 +72,11 @@ func main() {
 		UserPoolId: aws.String(os.Getenv("USER_POOL_ID")),
 		Username:   aws.String(username),
 	}
-
-	updateOutput, err := cognitoIdp.AdminUpdateUserAttributes(updateInput)
+	_, err = cognitoIdp.AdminUpdateUserAttributes(context.TODO(), updateAttrInput)
 	if err != nil {
-		fmt.Println("Error updating user attributes:", err)
-		os.Exit(1)
+		log.Fatal(err)
+		return
 	}
 
-	fmt.Println("Signup Output:", signupOutput)
-	fmt.Println("Update Output:", updateOutput)
+	log.Println("SignUp & UpdateUserAttributes success.")
 }
