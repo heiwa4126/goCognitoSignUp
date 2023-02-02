@@ -1,6 +1,6 @@
 # goCognitoSignUp
 
-[heiwa4126/awssdkv3-sign-up: AWS SDK for JavaScript v3 の練習。Amazon Cognitoにユーザを追加する追加する。](https://github.com/heiwa4126/awssdkv3-sign-up)
+[heiwa4126/awssdkv3-sign-up: AWS SDK for JavaScript v3 の練習。Amazon Cognitoにユーザを追加する](https://github.com/heiwa4126/awssdkv3-sign-up)
 をGo言語で書いてみたもの。
 
 * username(=email)
