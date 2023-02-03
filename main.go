@@ -34,49 +34,59 @@ func main() {
 	// cognitoIdp Clientの作成
 	cognitoIdp := cognitoidentityprovider.NewFromConfig(cfg)
 
-	// SignUp 操作を実行する
-	signUpInput := &cognitoidentityprovider.SignUpInput{
-		ClientId: aws.String(os.Getenv("CLIENT_ID")),
-		Password: aws.String(password),
-		UserAttributes: []types.AttributeType{
-			{
-				Name:  aws.String("email"),
-				Value: aws.String(username),
+	_, err = cognitoIdp.SignUp(
+		context.TODO(),
+		&cognitoidentityprovider.SignUpInput{
+			ClientId: aws.String(os.Getenv("CLIENT_ID")),
+			Password: aws.String(password),
+			UserAttributes: []types.AttributeType{
+				{
+					Name:  aws.String("email"),
+					Value: aws.String(username),
+				},
+				{
+					Name:  aws.String("given_name"),
+					Value: aws.String("g"),
+				},
+				{
+					Name:  aws.String("family_name"),
+					Value: aws.String("f"),
+				},
 			},
-			{
-				Name:  aws.String("given_name"),
-				Value: aws.String("g"),
-			},
-			{
-				Name:  aws.String("family_name"),
-				Value: aws.String("f"),
-			},
-		},
-		Username: aws.String(username),
-	}
-
-	_, err = cognitoIdp.SignUp(context.TODO(), signUpInput)
+			Username: aws.String(username),
+		})
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	// UpdateUserAttributes 操作を実行する
-	updateAttrInput := &cognitoidentityprovider.AdminUpdateUserAttributesInput{
-		UserAttributes: []types.AttributeType{
-			{
-				Name:  aws.String("email_verified"),
-				Value: aws.String("true"),
+	_, err = cognitoIdp.AdminUpdateUserAttributes(
+		context.TODO(),
+		&cognitoidentityprovider.AdminUpdateUserAttributesInput{
+			UserAttributes: []types.AttributeType{
+				{
+					Name:  aws.String("email_verified"),
+					Value: aws.String("true"),
+				},
 			},
-		},
-		UserPoolId: aws.String(os.Getenv("USER_POOL_ID")),
-		Username:   aws.String(username),
-	}
-	_, err = cognitoIdp.AdminUpdateUserAttributes(context.TODO(), updateAttrInput)
+			UserPoolId: aws.String(os.Getenv("USER_POOL_ID")),
+			Username:   aws.String(username),
+		})
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	log.Println("SignUp & UpdateUserAttributes success.")
+	_, err = cognitoIdp.AdminConfirmSignUp(
+		context.TODO(),
+		&cognitoidentityprovider.AdminConfirmSignUpInput{
+			UserPoolId: aws.String(os.Getenv("USER_POOL_ID")),
+			Username:   aws.String(username),
+		})
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	log.Println("SignUp, UpdateUserAttributes and ConfirmSignUp success.")
 }
